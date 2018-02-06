@@ -6,83 +6,42 @@ from subprocess import call
 import numpy
 import pandas
 import os.path
-import urllib
+import urllib2
 import requests
 import re
 import time
+from retry import retry
 from HTMLParser import HTMLParser
 
 filename = "data.csv"
 
-class TEDTranscriptHTMLParser(HTMLParser):
-    
-    def __init__(self, df):
-        HTMLParser.__init__(self)
-        self.state = 0
-        self.xtext = []
-        self.df = df
-    
-    def process(self):
-        # TODO: the website was updated to enable interactive transcript.
-        # This way to access the text does not work anymore. This needs to be fixed. 
-        self.df.ix[len(self.df)-1,'transcript'] = self.xtext.replace("\"", "")
-        
-    def handle_starttag(self, tag, attrs):
-        if self.state==0 and tag == 'span' and ('class','talk-transcript__fragment') in attrs:
-            self.state=1
-
-    def handle_endtag(self, tag):
-        if tag == "html":
-            self.xtext = " ".join(self.xtext)
-            self.process();
-
-    def handle_data(self, data):
-        if self.state == 1:
-            self.xtext.append(data.strip().rstrip().replace("\n", " "))
-            self.state = 0
-    
+@retry(urllib2.URLError, tries=100, delay=3, backoff=2)
+def urlopen_with_retry(link):
+    return urllib2.urlopen(link)
 
 class TEDTalkHTMLParser(HTMLParser):
     
     def __init__(self, df):
         HTMLParser.__init__(self)
-        self.state = 0
-        self.topics = []
-        self.topic_urls = []
         self.df = df
     
     def process(self):
-        self.df.ix[len(self.df)-1,'video'] = self.video
-        self.df.ix[len(self.df)-1,'topics'] = ";".join(self.topics)
-        self.df.ix[len(self.df)-1,'topic_urls'] = ";".join(self.topic_urls)
-        self.topics = []
-        self.topic_urls = []
+        self.df.ix[len(self.df)-1,'video'] = "https://hls.ted.com/talks/" + self.id + ".m3u8"
+        
+        # get transcript
+        link_tx = "https://www.ted.com/talks/" + self.id + "/transcript.json?language=en"
+        sock = urlopen_with_retry(link_tx)
+        encoding = sock.headers.getparam('charset')
+        page = sock.read().decode(encoding)
+        
+        self.df.ix[len(self.df)-1,'transcript'] = page
+        sock.close()
     
     def handle_starttag(self, tag, attrs):
-        if self.state==0 and tag == 'ul' and ('class','talk-topics__list') in attrs:
-            self.state = 1
-        elif self.state==1 and tag == 'a' and ('class','l3 talk-topics__link ga-link') in attrs:
-            sl = [v for (k,v) in attrs if k == 'href']
-            self.topic_urls.append(sl[0])
-            self.state=2
-        if self.state==3 and tag == 'script':
-            self.state=4
-
-    def handle_endtag(self, tag):
-        if self.state == 1 and tag == "ul":
-            self.state = 3
-
-    def handle_data(self, data):
-        if self.state == 2:
-            self.topics.append(data.rstrip().split("\n")[1])
-            self.state=1
-        elif self.state == 4:
-            code = data.rstrip()
-            result = re.search(r'"low":"(\S+)\?(\S+)","medium',code)
-            if result:
-                self.video = result.group(1)
-                self.process();
-                self.state = 5
+        if tag == 'meta' and (u'property', u'al:ios:url') in attrs:
+            urltmp = re.split('/', attrs[1][1])[3]
+            self.id = re.split('\?', urltmp)[0]
+            self.process()
 
 
 class TEDListHTMLParser(HTMLParser):
@@ -100,21 +59,14 @@ class TEDListHTMLParser(HTMLParser):
         self.df.ix[len(self.df)-1,'year'] = self.year
         self.df.ix[len(self.df)-1,'link'] = link_talk
         # parse talk
-        sock = urllib.urlopen(link_talk)
+        print(link_talk)
+        sock = urlopen_with_retry(link_talk)
         encoding = sock.headers.getparam('charset')
         page = sock.read().decode(encoding)
         sock.close()
         parser = TEDTalkHTMLParser(self.df)
         parser.feed(page)
-        # parse transcript
-        link_tx = "http://www.ted.com" + self.name + "/transcript?language=en"
-        sock = urllib.urlopen(link_tx)
-        encoding = sock.headers.getparam('charset')
-        page = sock.read().decode(encoding)
-        sock.close()
-        parser = TEDTranscriptHTMLParser(self.df)
-        parser.feed(page)
-    
+
     def handle_starttag(self, tag, attrs):
         if self.state==0 and tag == 'div' and ('class','media__message') in attrs:
             self.state=1;
@@ -123,7 +75,6 @@ class TEDListHTMLParser(HTMLParser):
         elif self.state==3 and tag == 'a':
             self.name = attrs[-1][1].rstrip()
             self.state = 4;
-            print (self.name)
         elif self.state == 5 and tag == 'span' and attrs[0][1]=="meta__val":
             self.state = 6;
 
@@ -142,16 +93,16 @@ class TEDListHTMLParser(HTMLParser):
             self.state = 5
         elif self.state == 6 and data.rstrip():
             self.year = data.rstrip().split("\n")[1]
-            self.state = 0     
+            self.state = 0
             self.process()
 
 
 df = pandas.read_csv(filename)
 
-for i in range(1,74,1): # Go through all pages
+for i in range(1,75,1): # Go through all pages
     print ("--- page %g ---" % i) 
     link = "http://www.ted.com/talks?page=" + str(i)
-    sock = urllib.urlopen(link)
+    sock = urlopen_with_retry(link)
     encoding = sock.headers.getparam('charset')
     page = sock.read().decode(encoding)
     sock.close()
@@ -159,4 +110,3 @@ for i in range(1,74,1): # Go through all pages
     parser.feed(page)
 
     df.to_csv(filename, index=False, encoding='utf-8')
-    time.sleep(2)

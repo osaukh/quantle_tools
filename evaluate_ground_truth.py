@@ -3,17 +3,18 @@
 import matplotlib.pyplot as plt
 import numpy
 import pandas
-from matplotlib.pyplot import hist
-import pylab
 import scipy.stats
-from scipy.stats import pearsonr, spearmanr
+
 
 def rsquared(x, y):
     """ Return R^2 where x and y are array-like."""
     slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(x, y)
     return r_value**2
+
+
 def rmse(predictions, targets):
     return numpy.sqrt(((predictions - targets) ** 2).mean())
+
 
 def printstat(x, r):    
     rsy = numpy.array(df[r+'_syllable_count'])
@@ -24,51 +25,51 @@ def printstat(x, r):
     xwo = numpy.array(df[x+'_word_count'])
     xse = numpy.array(df[x+'_sentence_count'])
     
-    print "AvgE:\t [syllables]: %g, \t [words]: %g,\t [sentences]: %g" % (
+    print("AvgE:\t [syllables]: %g, \t [words]: %g,\t [sentences]: %g" % (
                                 numpy.mean(abs(rsy - xsy)),
                                 numpy.mean(abs(rwo - xwo)),
-                                numpy.mean(abs(rse - xse)) )
-    print "R2:\t [syllables]: %g, \t [words]: %g,\t [sentences]: %g" % (
+                                numpy.mean(abs(rse - xse)) ))
+    print("R2:\t [syllables]: %g, \t [words]: %g,\t [sentences]: %g" % (
                                 rsquared(rsy,xsy),
                                 rsquared(rwo,xwo),
-                                rsquared(rse,xse) )
-    print "RMSE:\t [syllables]: %g, \t [words]: %g,\t [sentences]: %g" % (
+                                rsquared(rse,xse) ))
+    print("RMSE:\t [syllables]: %g, \t [words]: %g,\t [sentences]: %g" % (
                                 rmse(rsy,xsy),
                                 rmse(rwo,xwo),
-                                rmse(rse,xse) )
-    print "Corr:\t [syllables]: %g, \t [words]: %g,\t [sentences]: %g" % (
+                                rmse(rse,xse) ))
+    print("Corr:\t [syllables]: %g, \t [words]: %g,\t [sentences]: %g" % (
                                 numpy.corrcoef(rsy,xsy)[0, 1],
                                 numpy.corrcoef(rwo,xwo)[0, 1],
-                                numpy.corrcoef(rse,xse)[0, 1] )
-    print "Slope:\t [syllables]: %g, \t [words]: %g,\t [sentences]: %g" % (
+                                numpy.corrcoef(rse,xse)[0, 1] ))
+    print("Slope:\t [syllables]: %g, \t [words]: %g,\t [sentences]: %g" % (
                                 numpy.polyfit(xsy,rsy,1)[0],
                                 numpy.polyfit(xwo,rwo,1)[0],
-                                numpy.polyfit(xse,rse,1)[0] )
-    print "Offset:\t [syllables]: %g, \t [words]: %g,\t [sentences]: %g" % (
+                                numpy.polyfit(xse,rse,1)[0] ))
+    print("Offset:\t [syllables]: %g, \t [words]: %g,\t [sentences]: %g" % (
                                 numpy.polyfit(xsy,rsy,1)[1],
                                 numpy.polyfit(xwo,rwo,1)[1],
-                                numpy.polyfit(xse,rse,1)[1] )
+                                numpy.polyfit(xse,rse,1)[1] ))
 
 
 df = pandas.read_csv("data.csv")
 
-print "---- TED test length = %s -----" % len(df)
+print("---- TED test length = %s -----" % len(df))
 
-print "---- Results for %s vs %s -----" % ('wcc', 'wci')
+print("---- Results for %s vs %s -----" % ('wcc', 'wci'))
 printstat('wcc', 'wci')
 
-print "---- Results for %s vs %s -----" % ('cww', 'wci')
+print("---- Results for %s vs %s -----" % ('cww', 'wci'))
 printstat('cww', 'wci')
 
-print "---- Results for %s vs %s -----" % ('scn', 'wci')    # scn computes syllables only!
+print("---- Results for %s vs %s -----" % ('scn', 'wci'))    # scn computes syllables only!
 rsy = numpy.array(df['wci_syllable_count'])
 xsy = numpy.array(df['scn_syllable_count'])
-print "AvgE:\t [syllables]: %g" % (numpy.mean(abs(rsy - xsy)))
-print "R2:\t [syllables]: %g" % (rsquared(rsy,xsy))
-print "RMSE:\t [syllables]: %g" % (rmse(rsy,xsy))
-print "Corr:\t [syllables]: %g" % (numpy.corrcoef(rsy,xsy)[0, 1])
-print "Slope:\t [syllables]: %g" % (numpy.polyfit(xsy,rsy,1)[0])
-print "Offset:\t [syllables]: %g" % (numpy.polyfit(xsy,rsy,1)[1])
+print("AvgE:\t [syllables]: %g" % (numpy.mean(abs(rsy - xsy))))
+print("R2:\t [syllables]: %g" % (rsquared(rsy,xsy)))
+print("RMSE:\t [syllables]: %g" % (rmse(rsy,xsy)))
+print("Corr:\t [syllables]: %g" % (numpy.corrcoef(rsy,xsy)[0, 1]))
+print("Slope:\t [syllables]: %g" % (numpy.polyfit(xsy,rsy,1)[0]))
+print("Offset:\t [syllables]: %g" % (numpy.polyfit(xsy,rsy,1)[1]))
 
 
 

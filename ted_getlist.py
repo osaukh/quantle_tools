@@ -29,14 +29,14 @@ class TEDTalkHTMLParser(HTMLParser):
     
     def process(self):
         try:
-            self.df.ix[len(self.df)-1,'video'] = "https://hls.ted.com/talks/" + self.id + ".m3u8"
+            self.df.loc[self.df.index[len(self.df)-1], 'video'] = "https://hls.ted.com/talks/" + self.id + ".m3u8"
             
             # get transcript
             link_tx = "https://www.ted.com/talks/" + self.id + "/transcript.json?language=en"
             sock = urlopen_with_retry(link_tx)
             encoding = sock.headers.get_content_charset()
             page = sock.read().decode(encoding)
-            self.df.ix[len(self.df)-1,'someNewHeader'] = "A string of some sort"
+            # self.df.loc[self.df.index[len(self.df)-1], 'someNewHeader'] = "A string of some sort"
             # flatten paragraph into list of dicts
             # someNames = list
             # aSomeName = dict
@@ -47,7 +47,7 @@ class TEDTalkHTMLParser(HTMLParser):
                 cues = aParagraph.get("cues")
                 for aCue in cues:
                     lst.append(aCue)
-            self.df.ix[len(self.df)-1,'transcript'] = json.dumps(lst) 
+            self.df.loc[self.df.index[len(self.df)-1], 'transcript'] = json.dumps(lst)
             # self.df.ix[len(self.df)-1,'transcript'] = page
             sock.close()
         except:
@@ -69,11 +69,11 @@ class TEDListHTMLParser(HTMLParser):
     def process(self):
         link_talk = "http://www.ted.com" + self.name
         self.df.loc[len(self.df)] = None
-        self.df.ix[len(self.df)-1, 'name'] = self.name.split("/")[2]
-        self.df.ix[len(self.df)-1, 'speaker'] = self.speaker
-        self.df.ix[len(self.df)-1, 'title'] = self.title
-        self.df.ix[len(self.df)-1, 'year'] = self.year
-        self.df.ix[len(self.df)-1, 'link'] = link_talk
+        self.df.loc[df.index[len(self.df)-1], 'name'] = self.name.split("/")[2]
+        self.df.loc[df.index[len(self.df)-1], 'speaker'] = self.speaker
+        self.df.loc[df.index[len(self.df)-1], 'title'] = self.title
+        self.df.loc[df.index[len(self.df)-1], 'year'] = self.year
+        self.df.loc[df.index[len(self.df)-1], 'link'] = link_talk
         # parse talk
         print(link_talk)
         try:
@@ -120,7 +120,7 @@ df = pandas.read_csv(filename)
 
 for i in range(1, 81, 1): # Go through all pages
     print("--- page %g ---" % i) 
-    link = "http://www.ted.com/talks?page=" + str(i)
+    link = "https://www.ted.com/talks?page=" + str(i)
     try:
         sock = urlopen_with_retry(link)
         encoding = sock.headers.get_content_charset()

@@ -106,7 +106,7 @@ class SCNParser(HTMLParser):
 
     def handle_data(self, data):
         if self.state == 2:
-            self.df.loc[self.df.index[self.i], 'scn_syllable_count'] = data.rstrip()
+            self.df.ix[self.i, 'scn_syllable_count'] = data.rstrip()
             self.state = 3
 
 
@@ -148,9 +148,9 @@ for i, e in df.iterrows():
         wcc_syllable_count.append(parser.wcc_syllable_count)
         wcc_sentence_count.append(parser.wcc_sentence_count)
 
-    df.loc[df.index[i], 'wcc_word_count'] = json.dumps(wcc_word_count)
-    df.loc[df.index[i], 'wcc_syllable_count'] = json.dumps(wcc_syllable_count)
-    df.loc[df.index[i], 'wcc_sentence_count'] = json.dumps(wcc_sentence_count)
+    df.ix[i, 'wcc_word_count'] = json.dumps(wcc_word_count)
+    df.ix[i, 'wcc_syllable_count'] = json.dumps(wcc_syllable_count)
+    df.ix[i, 'wcc_sentence_count'] = json.dumps(wcc_sentence_count)
 
 
 df.to_csv(filename, index=False, encoding='utf-8')

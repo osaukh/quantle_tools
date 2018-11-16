@@ -15,7 +15,8 @@ for i, e in df.iterrows():
     print("--- %g - %s ---" % (i, e['name']))
     
     # get video file and convert if necessary
-    if not os.path.exists("ted/"+e['name']+".aac"):
+    # since we delete all but the subfiles we can only check if the correct folder exists before downloading
+    if not os.path.exists("ted\\" + e['name']):
         t1 = "tmp1.m3u"
         t2 = "tmp2.m3u"
         t3 = "ted/" + e['name'] + ".aac"

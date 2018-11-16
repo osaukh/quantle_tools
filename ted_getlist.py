@@ -118,7 +118,7 @@ class TEDListHTMLParser(HTMLParser):
 
 df = pandas.read_csv(filename)
 
-for i in range(1, 2, 1): # Go through all pages
+for i in range(1, 83, 1): # Go through all pages
     print("--- page %g ---" % i) 
     link = "https://www.ted.com/talks?page=" + str(i)
     try:

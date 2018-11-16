@@ -19,15 +19,15 @@ for i, e in df.iterrows():
     # text = e['transcript'].decode('utf_8')
     bar = json.loads(e['transcript'])
     text = ', '.join(d['text'] for d in bar)
-    df.loc[df.index[i], 'applause_count'] = text.count("(Applause)")
-    df.loc[df.index[i], 'music_count'] = text.count("Music)") +  \
+    df.ix[i, 'applause_count'] = text.count("(Applause)")
+    df.ix[i, 'music_count'] = text.count("Music)") +  \
         text.count("Video)") + text.count("♫") + text.count("♪") + \
         text.count("oise)") + text.count("oises)") + text.count("music)") + text.count("violin)") + \
         text.count(" CA:") + text.count("ang)") + text.count("aughs)") + text.count("Whoosh)") + \
         text.count("(In Dutch)") + text.count("CC: A-rhythm") + text.count("Tone") + \
         text.count("(Cheers)") + text.count("(Dinosaur roaring)") + text.count("(Musical chords)") + \
         text.count(" MB:") + text.count(" MR:") + text.count("(Audience:") + text.count(" MTT:")
-    df.loc[df.index[i], 'laughter_count'] = text.count("(Laughter)")
+    df.ix[i, 'laughter_count'] = text.count("(Laughter)")
     # this needs to be reworked as transcript is a list of dicts
     # df.ix[i,'transcript'] = (text.replace("(Applause)","").replace("(Laughter)",""))
    

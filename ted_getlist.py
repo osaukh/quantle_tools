@@ -16,7 +16,7 @@ from retry import retry
 filename = "data.csv"
 
 
-@retry(urllib.error.URLError, tries=6, delay=2, backoff=1.5, logger=None)
+@retry(urllib.error.URLError, tries=8, delay=2, backoff=1.5, logger=None)
 def urlopen_with_retry(link):
     return urllib.request.urlopen(link)
 
@@ -118,7 +118,7 @@ class TEDListHTMLParser(HTMLParser):
 
 df = pandas.read_csv(filename)
 
-for i in range(1, 81, 1): # Go through all pages
+for i in range(1, 2, 1): # Go through all pages
     print("--- page %g ---" % i) 
     link = "https://www.ted.com/talks?page=" + str(i)
     try:

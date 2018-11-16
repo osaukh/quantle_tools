@@ -72,16 +72,19 @@ for i, e in df.iterrows():
                 # all other elements
                 startTime = timeStamps[j].get('time') / 1000
                 duration = (timeStamps[j + 1].get('time') / 1000) - startTime
-                subFile = "ted\\" + e['name'] + "\\" + str(j) + ".wav"
-                ret = subprocess.call(
-                    ['ffmpeg', '-ss', str(startTime), '-i', t4, '-t', str(duration), subFile]
-                    , stdout=subprocess.DEVNULL
-                    , stderr=subprocess.DEVNULL
-                )
-            # ret = 0 -> success
-            # ret = 1 -> fail
-            if ret:
-                print("Error when splitting file for " + str(j) + ".wav")
+                if (duration <= 10):
+                    subFile = "ted\\" + e['name'] + "\\" + str(j) + ".wav"
+                    ret = subprocess.call(
+                        ['ffmpeg', '-ss', str(startTime), '-i', t4, '-t', str(duration), subFile]
+                        , stdout=subprocess.DEVNULL
+                        , stderr=subprocess.DEVNULL
+                    )
+                    # ret = 0 -> success
+                    # ret = 1 -> fail
+                    if ret:
+                        print("Error when splitting file for " + str(j) + ".wav")
+                else:
+                    print("Subfile " +str(j) + " >10 seconds. Ignoring....")
         # cleanup
         try:
             os.remove(t4)
